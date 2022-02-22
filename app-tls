@@ -1,0 +1,12 @@
+server {
+	listen 80;
+	listen [::]:80;
+    
+    # TODO tls config
+
+	server_name app.mrkbzlab.local;
+
+	location / {
+		proxy_pass http://mrkbzlab.local:8000;
+	}
+}
