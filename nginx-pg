@@ -1,0 +1,15 @@
+#!/bin/bash
+
+function genssl {
+    openssl genrsa -out ./ssl/dev_private_key.pem 2048
+    openssl req -new -key ./ssl/dev_private_key.pem -out ./ssl/dev_csr.csr -config ./ssl/dev_csr.conf
+    openssl x509 -req -days 365 -in ./ssl/dev_csr.csr -signkey ./ssl/dev_private_key.pem -out ./ssl/dev_cert.crt \
+    -extensions req_ext -extfile ./ssl/dev_csr.conf
+}
+
+command=$1
+case "$command" in
+genssl)
+    genssl
+    ;;
+esac
