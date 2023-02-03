@@ -1,10 +1,39 @@
 #!/bin/bash
 
-function genssl {
-    openssl genrsa -out ./ssl/dev_private_key.pem 2048
-    openssl req -new -key ./ssl/dev_private_key.pem -out ./ssl/dev_csr.csr -config ./ssl/dev_csr.conf
-    openssl x509 -req -days 365 -in ./ssl/dev_csr.csr -signkey ./ssl/dev_private_key.pem -out ./ssl/dev_cert.crt \
-    -extensions req_ext -extfile ./ssl/dev_csr.conf
+# consider this 
+# https://letsencrypt.org/docs/certificates-for-localhost/
+
+# ca key, cert generation
+gen_ca() {
+    openssl req -x509 \
+                -sha256 -days 356 \
+                -nodes \
+                -newkey rsa:2048 \
+                -subj "/CN=bzlab/C=TR" \
+                -keyout ./ssl/rootCA.key -out ./ssl/rootCA.crt 
+}
+
+# generate server
+gen_server() {
+    # gen key
+    openssl genrsa -out ./ssl/server.key 2048
+
+    # gen server csr
+    openssl req -new -key ./ssl/server.key -out ./ssl/server.csr -config ./ssl/csr.conf
+
+    # gen cert
+    openssl x509 -req \
+        -in ./ssl/server.csr \
+        -CA ./ssl/rootCA.crt -CAkey ./ssl/rootCA.key \
+        -CAcreateserial -out ./ssl/server.crt \
+        -days 365 \
+        -sha256 -extfile ./ssl/cert.conf
+}
+
+genssl() {
+    gen_ca
+    gen_server
+    # openssl x509 -in rootCA.crt -out rootCA.pem -outform PEM
 }
 
 command=$1
